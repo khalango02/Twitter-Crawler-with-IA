@@ -1,0 +1,110 @@
+{
+    "nodes": [
+      {
+        "parameters": {
+          "triggerTimes": {
+            "item": [
+              {
+                "mode": "everyX",
+                "value": 10,
+                "unit": "minutes"
+              }
+            ]
+          }
+        },
+        "name": "Cron",
+        "type": "n8n-nodes-base.cron",
+        "typeVersion": 1,
+        "position": [200, 300]
+      },
+      {
+        "parameters": {
+          "authentication": "predefinedCredentialType",
+          "url": "https://api.twitter.com/2/tweets/search/recent",
+          "options": {},
+          "queryParametersUi": {
+            "parameter": [
+              { "name": "query", "value": "bitcoin OR $BTC OR BTC lang:en" },
+              { "name": "max_results", "value": "10" },
+              { "name": "tweet.fields", "value": "created_at" },
+              { "name": "expansions", "value": "author_id" },
+              { "name": "user.fields", "value": "username" }
+            ]
+          }
+        },
+        "name": "Buscar Tweets",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 1,
+        "position": [400, 300],
+        "credentials": {
+          "httpBasicAuth": {
+            "id": "twitter-api",
+            "name": "Twitter API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "functionCode": "return items.map(item => ({\n  json: {\n    text: item.json.data.text,\n    author: item.json.includes.users[0]?.username || 'unknown',\n    created_at: item.json.data.created_at\n  }\n}));"
+        },
+        "name": "Formatar Tweets",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 1,
+        "position": [600, 300]
+      },
+      {
+        "parameters": {
+          "authentication": "predefinedCredentialType",
+          "url": "https://api.openai.com/v1/chat/completions",
+          "method": "POST",
+          "jsonParameters": true,
+          "options": {},
+          "bodyParametersJson": "{\n  \"model\": \"gpt-4\",\n  \"messages\": [\n    { \"role\": \"system\", \"content\": \"Você é um analista financeiro. Dado o seguinte tweet sobre Bitcoin, identifique possíveis sinais de investimento.\" },\n    { \"role\": \"user\", \"content\": \"Tweet: {{ $json.text }}\" }\n  ],\n  \"temperature\": 0.5\n}"
+        },
+        "name": "Analisar com OpenAI",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 1,
+        "position": [800, 300],
+        "credentials": {
+          "httpBasicAuth": {
+            "id": "openai-api",
+            "name": "OpenAI API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "authentication": "oAuth2",
+          "url": "https://<seu_project_id>.firebaseio.com/insights.json",
+          "method": "POST",
+          "jsonParameters": true,
+          "options": {},
+          "bodyParametersJson": "{\n  \"tweet\": \"{{ $json.text }}\",\n  \"author\": \"{{ $json.author }}\",\n  \"created_at\": \"{{ $json.created_at }}\",\n  \"insight\": \"{{ $node['Analisar com OpenAI'].json.choices[0].message.content }}\"\n}"
+        },
+        "name": "Salvar no Firebase",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 1,
+        "position": [1000, 300],
+        "credentials": {
+          "oAuth2Api": {
+            "id": "firebase-oauth",
+            "name": "Firebase OAuth2"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Cron": {
+        "main": [[{"node": "Buscar Tweets", "type": "main", "index": 0}]]
+      },
+      "Buscar Tweets": {
+        "main": [[{"node": "Formatar Tweets", "type": "main", "index": 0}]]
+      },
+      "Formatar Tweets": {
+        "main": [[{"node": "Analisar com OpenAI", "type": "main", "index": 0}]]
+      },
+      "Analisar com OpenAI": {
+        "main": [[{"node": "Salvar no Firebase", "type": "main", "index": 0}]]
+      }
+    }
+  }
