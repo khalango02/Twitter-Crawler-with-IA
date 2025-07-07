@@ -10,26 +10,22 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import openai
 
-# ========== CONFIGURAÇÕES ==========
 USERNAME = "TWITTER-USERNAME"
 PASSWORD = "TWITTER-PASSWORD"
 SERVICE_ACCOUNT_PATH = "serviceAccountKey.json"
 FIREBASE_DB_URL = "FIREBASE_DB_URL"
 OPENAI_API_KEY = "OPEN_AI_API_KEY"
 
-# Listas do Twitter
 twitter_lists = [
     {"tag": "All", "url": "https://x.com/i/lists/ID1"},
     {"tag": "BTC", "url": "https://x.com/i/lists/ID2"},
     {"tag": "cyberseguranca", "url": "https://twitter.com/i/lists/ID3"}
 ]
 
-# ========== INICIALIZAÇÕES ==========
 cred = credentials.Certificate(SERVICE_ACCOUNT_PATH)
 firebase_admin.initialize_app(cred, {"databaseURL": FIREBASE_DB_URL})
 openai.api_key = OPENAI_API_KEY
 
-# ========== FUNÇÃO DE ANÁLISE ==========
 def analisar_tweet_com_ia(texto):
     prompt = f"""
 Analise o seguinte tweet e diga se ele contém informação relevante sobre investimentos.
@@ -58,7 +54,6 @@ options = Options()
 options.add_argument("--window-size=1200,800")
 driver = webdriver.Chrome(service=Service(), options=options)
 
-# ========== LOGIN TWITTER ==========
 driver.get("https://twitter.com/login")
 WebDriverWait(driver, 15).until(EC.presence_of_element_located((By.NAME, "text")))
 driver.find_element(By.NAME, "text").send_keys(USERNAME)
@@ -68,12 +63,10 @@ driver.find_element(By.NAME, "password").send_keys(PASSWORD)
 driver.find_element(By.XPATH, '//span[text()="Entrar"]').click()
 time.sleep(5)
 
-# ========== VERIFICA TWEETS JÁ SALVOS ==========
 ref = db.reference("twitter-list-tweets")
 existing_data = ref.get() or {}
 existing_ids = set(v.get("tweet_id") for v in existing_data.values() if "tweet_id" in v)
 
-# ========== LOOP NAS LISTAS ==========
 for lista in twitter_lists:
     tag = lista["tag"]
     url = lista["url"]

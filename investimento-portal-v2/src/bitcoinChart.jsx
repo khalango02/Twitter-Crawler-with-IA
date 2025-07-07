@@ -19,10 +19,8 @@ export default function BitcoinChart() {
   const lastPriceRef = useRef(null);
   const timerRef = useRef(null);
 
-  // Controla se já carregou o histórico (para evitar carregar duas vezes)
   const historicalLoaded = useRef(false);
 
-  // Formata label de tempo de acordo com intervalo
   const formatLabel = (timestamp, interval) => {
     const date = new Date(timestamp);
     if (interval === "minutely") {
@@ -38,7 +36,6 @@ export default function BitcoinChart() {
     return date.toLocaleDateString();
   };
 
-  // Busca dados históricos
   const fetchHistoricalData = async (days, interval) => {
     try {
       const res = await fetch(
@@ -56,13 +53,12 @@ export default function BitcoinChart() {
         lastPriceRef.current = newPrices[newPrices.length - 1];
       }
 
-      historicalLoaded.current = true; // marcou que carregou o histórico
+      historicalLoaded.current = true; 
     } catch (err) {
       console.error("Erro ao buscar dados históricos", err);
     }
   };
 
-  // Busca preço atual e adiciona ao gráfico mantendo histórico
   const fetchCurrentPrice = async () => {
     try {
       const res = await fetch(
@@ -97,18 +93,15 @@ export default function BitcoinChart() {
     const { refreshRate, days, interval } = intervals[intervalType];
 
     if (intervalType === "1s") {
-      // Carrega o histórico só se ainda não carregou
       if (!historicalLoaded.current) {
         fetchHistoricalData(days, interval).then(() => {
-          // Depois do histórico carregado, inicia timer para dados em tempo real
           timerRef.current = setInterval(fetchCurrentPrice, refreshRate);
         });
       } else {
-        // Se histórico já carregado, só inicia o timer
         timerRef.current = setInterval(fetchCurrentPrice, refreshRate);
       }
     } else {
-      historicalLoaded.current = false; // para que mude o intervalo e recarregue histórico
+      historicalLoaded.current = false; 
       fetchHistoricalData(days, interval);
     }
 

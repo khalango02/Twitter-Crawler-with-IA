@@ -141,16 +141,15 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setModalOpen(false)} // fecha modal clicando fora
+            onClick={() => setModalOpen(false)} 
           >
             <motion.div
               className="bg-[#161b22] rounded-lg p-6 max-w-lg max-h-[80vh] overflow-auto text-white flex flex-col"
               initial={{ scale: 0.8 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.8 }}
-              onClick={(e) => e.stopPropagation()} // previne fechar ao clicar dentro da modal
+              onClick={(e) => e.stopPropagation()} 
             >
-              {/* Cabeçalho: imagem + nome lado a lado */}
               <div className="flex items-center space-x-4 mb-4">
                 <img
                   src={selectedTweet.image_url}
@@ -160,10 +159,8 @@ export default function App() {
                 <h3 className="text-xl font-bold">{selectedTweet.username}</h3>
               </div>
 
-              {/* Texto do tweet */}
               <p className="whitespace-pre-wrap mb-4">{selectedTweet.text}</p>
 
-              {/* Insight, se houver */}
               {selectedTweet.insight && selectedTweet.insight !== "Nenhum" && (
                 <p className="bg-gray-800 p-3 rounded mb-4 text-sm italic text-gray-300">
                   {selectedTweet.insight}
@@ -181,8 +178,6 @@ export default function App() {
                 })}
               </p>
 
-
-              {/* Botão fechar */}
               <button
                 className="ml-auto bg-red-500 px-4 py-1 rounded hover:bg-red-600"
                 onClick={() => setModalOpen(false)}
