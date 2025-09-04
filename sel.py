@@ -49,7 +49,6 @@ Tweet: "{texto}"
         print("Erro na IA:", e)
         return {"insight": "Erro na IA", "importance_level": 0}
 
-# ========== SETUP NAVEGADOR ==========
 options = Options()
 options.add_argument("--window-size=1200,800")
 driver = webdriver.Chrome(service=Service(), options=options)
